@@ -1,7 +1,10 @@
 from flask import Flask, request, jsonify
 from youtube_transcript_api import ( YouTubeTranscriptApi, NoTranscriptFound, TranscriptsDisabled )
+from youtube_transcript_api.proxies import WebshareProxyConfig
 
 app = Flask(__name__)
+
+ytt_api = YouTubeTranscriptApi()
 
 def get_video_id(url_link):
     if "youtu.be/" in url_link:
@@ -22,12 +25,12 @@ def fetch_transcript():
         return jsonify({"error": "Invalid YouTube URL"}), 400
 
     try:
-        transcript = YouTubeTranscriptApi().fetch(video_id, languages=["en"])
+        transcript = ytt_api.fetch(video_id, languages=["en"])
         lang_used = "en"
 
     except NoTranscriptFound:
         try:
-            t_list = YouTubeTranscriptApi().list(video_id)
+            t_list = ytt_api.list(video_id)
             chosen = next(iter(t_list))
             transcript = chosen.fetch()
             lang_used = chosen.language_code
